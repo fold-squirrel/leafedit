@@ -2,11 +2,11 @@ use lopdf::content::{Content, Operation};
 use lopdf::{Document, Object, Stream, StringFormat,dictionary};
 
 pub fn run_demo() {
-	let mut doc = Document::with_version("1.5");
+	let mut doc = Document::with_version("1.7");
 	let pages_id = doc.new_object_id();
 	let libre_font = include_bytes!("../include/Liberation_sans_font_striped.bin");
 	let libre_font_vec: Vec<u8> = libre_font.iter().cloned().collect();
-	let embed_libre_font = doc.add_object(Stream::new(dictionary! {}, libre_font_vec).with_compression(false));
+	let embed_libre_font = doc.add_object(Stream::new(dictionary! {"Length1" => libre_font_vec.len() as i32}, libre_font_vec).with_compression(false));
 	let font_descripter = doc.add_object(dictionary! {
 		"Type" => "FontDescriptor",
 		"FontName" => "BAAAAA+LiberationSans",
@@ -21,19 +21,20 @@ pub fn run_demo() {
 	});
 	let to_unicode = include_bytes!("../include/Liberation_sans_font_to_unicode.bin");
 	let to_unicode_vec: Vec<u8> = to_unicode.iter().cloned().collect();
-	let to_unicode_obj = doc.add_object(Stream::new(dictionary! {}, to_unicode_vec));
+	let to_unicode_obj = doc.add_object(Stream::new(dictionary! {}, to_unicode_vec).with_compression(true));
 	let libre_font_obj = doc.add_object(dictionary! {
 		"Type" => "Font",
 		"Subtype" => "TrueType",
+		"BaseFont" => "BAAAAA+LiberationSans",
 		"FirstChar" => 0,
-		"LastChar" => 62,
-		"Widths" => vec![750.into(), 666.into(), 666.into(), 722.into(), 722.into(), 666.into(), 610.into(), 777.into(), 722.into(), 277.into(), 500.into(), 666.into(), 556.into(), 833.into(), 722.into(), 777.into(), 666.into(), 777.into(), 722.into(), 666.into(), 610.into(), 722.into(), 666.into(), 943.into(), 666.into(), 666.into(), 610.into(), 556.into(), 556.into(), 500.into(), 556.into(), 556.into(), 277.into(), 556.into(), 556.into(), 222.into(), 222.into(), 500.into(), 222.into(), 833.into(), 556.into(), 556.into(), 556.into(), 556.into(), 333.into(), 500.into(), 277.into(), 556.into(), 500.into(), 722.into(), 500.into(), 500.into(), 500.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into()],
+		"LastChar" => 64,
+		"Widths" => vec![750.into(), 666.into(), 666.into(), 722.into(), 722.into(), 666.into(), 610.into(), 777.into(), 722.into(), 277.into(), 500.into(), 666.into(), 556.into(), 833.into(), 722.into(), 777.into(), 666.into(), 777.into(), 722.into(), 666.into(), 610.into(), 722.into(), 666.into(), 943.into(), 666.into(), 666.into(), 610.into(), 556.into(), 556.into(), 500.into(), 556.into(), 556.into(), 277.into(), 556.into(), 556.into(), 222.into(), 222.into(), 500.into(), 222.into(), 833.into(), 556.into(), 556.into(), 556.into(), 556.into(), 333.into(), 500.into(), 277.into(), 556.into(), 500.into(), 722.into(), 500.into(), 500.into(), 500.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 277.into(), 277.into()],
 		"FontDescriptor" => font_descripter,
 		"ToUnicode" => to_unicode_obj,
 	});
 	let check_mark_font = include_bytes!("../include/Symbola_font_striped.bin");
 	let check_mark_font_vec: Vec<u8> = check_mark_font.iter().cloned().collect();
-	let embed_check_mark_font = doc.add_object(Stream::new(dictionary! {}, check_mark_font_vec).with_compression(false));
+	let embed_check_mark_font = doc.add_object(Stream::new(dictionary! {"Length1" => check_mark_font_vec.len() as i32}, check_mark_font_vec).with_compression(false));
 	let font_descripter = doc.add_object(dictionary! {
 		"Type" => "FontDescriptor",
 		"FontName" => "CAAAAA+Symbola",
@@ -48,7 +49,7 @@ pub fn run_demo() {
 	});
 	let to_unicode = include_bytes!("../include/Symbola_font_to_unicode.bin");
 	let to_unicode_vec: Vec<u8> = to_unicode.iter().cloned().collect();
-	let to_unicode_obj = doc.add_object(Stream::new(dictionary! {}, to_unicode_vec));
+	let to_unicode_obj = doc.add_object(Stream::new(dictionary! {}, to_unicode_vec).with_compression(true));
 	let check_mark_font_obj = doc.add_object(dictionary! {
 		"Type" => "Font",
 		"Subtype" => "TrueType",
@@ -68,13 +69,15 @@ pub fn run_demo() {
 	let content = Content {
 		operations: vec![
 			Operation::new("BT", vec![]),
-			Operation::new("Tf", vec!["F2".into(), 48.into()]),
+			Operation::new("Tf", vec!["F1".into(), 48.into()]),
 			Operation::new("Td", vec![100.into(), 600.into()]),
-			Operation::new("Tj", vec![Object::String(vec![1] , StringFormat::Hexadecimal)]),
+			Operation::new("Tj", vec![Object::String(vec![0x3f, 0x12, 0x1, 0x23], StringFormat::Hexadecimal)]),
+			Operation::new("Tf", vec!["F2".into(), 48.into()]),
+			Operation::new("Tj", vec![Object::String(vec![0x1], StringFormat::Hexadecimal)]),
 			Operation::new("ET", vec![]),
 		],
 	};
-	let content_id = doc.add_object(Stream::new(dictionary! {}, content.encode().unwrap()));
+	let content_id = doc.add_object(Stream::new(dictionary! {}, content.encode().unwrap()).with_compression(true));
 	let page_id = doc.add_object(dictionary! {
 		"Type" => "Page",
 		"Parent" => pages_id,

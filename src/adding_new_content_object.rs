@@ -43,10 +43,10 @@ pub fn run_demo(file_name: &String, student_name: String) {
 			Operation::new("BT", vec![]), 
 			Operation::new("Tf", vec!["F1".into(), 14.into()]),
 			Operation::new("Tm", vec![
-						   1.into(),
-						   0.into(),
-						   0.into(),
 						   (1 as i8).into(),
+						   0.into(),
+						   0.into(),
+						   (-1 as i8).into(),
 						   100.into(),
 						   220.into(),
 			]),
