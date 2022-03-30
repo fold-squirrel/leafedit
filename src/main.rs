@@ -1,8 +1,5 @@
 use std::collections::BTreeMap;
-#[allow(unused_imports)]
-use lopdf::content::{Content, Operation};
-#[allow(unused_imports)]
-use lopdf::{Document, Object, Stream, StringFormat, ObjectId, Dictionary, Error, dictionary};
+use lopdf::{Document, Object, Stream, ObjectId, Dictionary, dictionary};
 
 mod adding_new_content_object;
 mod embed_fonts_example;
@@ -203,7 +200,7 @@ fn get_font_dict(doc: &mut Document, resourse: &mut Object) -> Dictionary {
 
 	let fonts_obj = match resourse_dict.get_mut(b"Font"){
 		Ok(fonts_obj) => fonts_obj.clone(),
-		Err(err) => panic!("error getting font_obj: {}", err),
+		Err(_err) => Object::Dictionary(dictionary! {}),
 	};
 
 	let mut fonts_obj_deref = match fonts_obj.as_reference() {
@@ -260,10 +257,36 @@ fn edit_content_streams(doc: &mut Document, p_id: &ObjectId, f_map: BTreeMap<Str
 	};
 
 	let mat = Matrix::inverse(&mut cm_vec);
-	let m = [mat.cm[0], mat.cm[1], mat.cm[2], mat.cm[3], mat.cm[4], mat.cm[5]];
+	let mut mat_s = find_scale(&doc);
+	mat_s.multiply(mat);
+	let m = [mat_s.cm[0], mat_s.cm[1], mat_s.cm[2], mat_s.cm[3], mat_s.cm[4], mat_s.cm[5]];
 	let str = format!("{} {} {} {} {} {} cm ", m[0], m[1], m[2], m[3], m[4], m[5]);
 	str_stream.push_str(str.as_str());
 	doc.change_content_stream(last, str_stream.as_bytes().to_vec());
+}
+
+fn find_scale(doc: &Document) -> Matrix {
+	let mut page_iter = doc.page_iter();
+	let first_page = match doc.get_object(match page_iter.next() {
+			Some(page) => page,
+			None => panic!("imposseble"),
+		}) {
+		Ok(first_page) => first_page,
+		Err(err) => panic!("??? {}", err),
+	};
+
+	let h = first_page.as_dict().unwrap()
+		.get(b"MediaBox").unwrap()
+		.as_array().unwrap()
+		.get(3).unwrap()
+		.as_f64().unwrap();
+
+	let scale = h/842f64;
+	let round_scale = (scale * 1000f64).round() / 1000f64;
+
+	println!("h={}", round_scale);
+
+	Matrix { cm: [round_scale, 0f64, 0f64, round_scale, 0f64, 0f64], i: 0 }
 }
 
 fn get_content_str(doc: &mut Document, content_id: &ObjectId, str_stream: &mut String) {
