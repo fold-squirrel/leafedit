@@ -3,6 +3,7 @@ use lopdf::{Document, Object, Stream, ObjectId, Dictionary, dictionary};
 pub fn patch(in_file_path: &String, out_file_path: &String) {
 //	demos();
 	let mut doc: Document = Document::default();
+	doc.decompress();
 	let mut first_page = ObjectId::default();
 	let mut resources_id = ObjectId::default();
 	let mut resources_obj: &mut Object = &mut Object::Null;
@@ -12,7 +13,6 @@ pub fn patch(in_file_path: &String, out_file_path: &String) {
 	get_first_page_checked(&mut doc, &mut first_page);
 	get_page_resource(&mut doc, &first_page, &mut resources_obj, &mut resources_id);
 	fonts_names_map = edit_font_dict(&mut doc, &mut resources_obj);
-
 
 	edit_content_streams(&mut doc, &first_page, fonts_names_map);
 	doc.objects.insert(resources_id, resources_obj.clone());
@@ -81,7 +81,6 @@ fn edit_font_dict(doc: &mut Document, resourse: &mut Object) -> BTreeMap<String,
 	let mut font_dict_cln = get_font_dict(doc, resourse);
 	make_all_refs(doc, &mut font_dict_cln);
 
-	let font_dict = font_dict_cln.clone();
 	let font_iter = font_dict_cln.iter();
 
 	let mut font_map = BTreeMap::new();
@@ -128,14 +127,25 @@ fn add_fonts(doc: &mut Document, f1: ObjectId, f2: ObjectId) {
 	});
 	let to_unicode = include_bytes!("../../include/Liberation_sans_font_to_unicode.bin");
 	let to_unicode_vec: Vec<u8> = to_unicode.iter().cloned().collect();
-	let to_unicode_obj = doc.add_object(Stream::new(dictionary! {}, to_unicode_vec).with_compression(false));
+	let to_unicode_obj = doc.add_object(Stream::new(dictionary! {}, to_unicode_vec).with_compression(true));
 	doc.objects.insert(f1, Object::Dictionary(dictionary! {
 		"Type" => "Font",
 		"Subtype" => "TrueType",
 		"BaseFont" => "BAAAAA+LiberationSans",
 		"FirstChar" => 0,
-		"LastChar" => 64,
-		"Widths" => vec![750.into(), 666.into(), 666.into(), 722.into(), 722.into(), 666.into(), 610.into(), 777.into(), 722.into(), 277.into(), 500.into(), 666.into(), 556.into(), 833.into(), 722.into(), 777.into(), 666.into(), 777.into(), 722.into(), 666.into(), 610.into(), 722.into(), 666.into(), 943.into(), 666.into(), 666.into(), 610.into(), 556.into(), 556.into(), 500.into(), 556.into(), 556.into(), 277.into(), 556.into(), 556.into(), 222.into(), 222.into(), 500.into(), 222.into(), 833.into(), 556.into(), 556.into(), 556.into(), 556.into(), 333.into(), 500.into(), 277.into(), 556.into(), 500.into(), 722.into(), 500.into(), 500.into(), 500.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 277.into(), 277.into()],
+		"LastChar" => 65,
+		"Widths" => vec![ 750.into(), 666.into(), 666.into(), 722.into(), 722.into(),
+		666.into(), 610.into(), 777.into(), 722.into(), 277.into(), 500.into(),
+		666.into(), 556.into(), 833.into(), 722.into(), 777.into(), 666.into(),
+		777.into(), 722.into(), 666.into(), 610.into(), 722.into(), 666.into(),
+		943.into(), 666.into(), 666.into(), 610.into(), 556.into(), 556.into(),
+		500.into(), 556.into(), 556.into(), 277.into(), 556.into(), 556.into(),
+		222.into(), 222.into(), 500.into(), 222.into(), 833.into(), 556.into(),
+		556.into(), 556.into(), 556.into(), 333.into(), 500.into(), 277.into(),
+		556.into(), 500.into(), 722.into(), 500.into(), 500.into(), 500.into(),
+		556.into(), 556.into(), 556.into(), 556.into(), 556.into(), 556.into(),
+		556.into(), 556.into(), 556.into(), 556.into(), 277.into(), 277.into(),
+		277.into()],
 		"FontDescriptor" => font_descripter,
 		"ToUnicode" => to_unicode_obj,
 	}));
@@ -156,7 +166,7 @@ fn add_fonts(doc: &mut Document, f1: ObjectId, f2: ObjectId) {
 	});
 	let to_unicode = include_bytes!("../../include/Symbola_font_to_unicode.bin");
 	let to_unicode_vec: Vec<u8> = to_unicode.iter().cloned().collect();
-	let to_unicode_obj = doc.add_object(Stream::new(dictionary! {}, to_unicode_vec).with_compression(false));
+	let to_unicode_obj = doc.add_object(Stream::new(dictionary! {}, to_unicode_vec).with_compression(true));
 	doc.objects.insert(f2, Object::Dictionary(dictionary! {
 		"Type" => "Font",
 		"Subtype" => "TrueType",

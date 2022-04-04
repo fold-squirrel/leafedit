@@ -1,6 +1,7 @@
 use lopdf::content::{Content, Operation};
 use lopdf::{Document, Object, Stream, StringFormat,dictionary};
 
+#[allow(dead_code)]
 pub fn run_demo() {
 	let mut doc = Document::with_version("1.7");
 	let pages_id = doc.new_object_id();
@@ -96,6 +97,6 @@ pub fn run_demo() {
 		"Pages" => pages_id,
 	});
 	doc.trailer.set("Root", catalog_id);
-	doc.compress();
+//	doc.compress();
 	doc.save("example.pdf").unwrap();
 }

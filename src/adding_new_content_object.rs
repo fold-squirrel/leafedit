@@ -1,6 +1,7 @@
 use lopdf::content::{Content, Operation};
 use lopdf::{Document, Object, Stream, dictionary};
 
+#[allow(dead_code)]
 pub fn run_demo(file_name: &String, student_name: String) {
 	let mut doc = Document::load(file_name).unwrap();
 	doc.decompress();
@@ -54,6 +55,8 @@ pub fn run_demo(file_name: &String, student_name: String) {
 			Operation::new("ET", vec![]), 
 			],
 	};
+	let cevvv: Vec<Operation> = vec![Operation::new("mm", vec![])];
+	print!("{:?}", cevvv);
 	let content_id = doc.add_object(Stream::new(dictionary! {}, content.encode().unwrap()));
 	let mut new_dic = lopdf::Dictionary::new();
 	for (key, value) in doc.get_object(*first_page).unwrap().as_dict().unwrap() {
