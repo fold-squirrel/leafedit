@@ -1,5 +1,6 @@
 ### Creating Uel paper is a tedious task waiting to be automated
 
+#**ReadMe Deprecated**
 # leafedit
 **leafedit** 
 is a general purpose command line pdf editor (well not just yet but will very soon) written entirely in safe rust, that can be used to automate repetative pdf manipulation tasks.
