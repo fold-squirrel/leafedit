@@ -46,7 +46,8 @@ fn apply_opr(content_obj: &mut Object, opr_vec: Vec<Opr>, sc: Scale) -> Result<(
 
     let mut operations: Vec<Operation> = vec![
         Operation::new("q", vec![]),
-        Operation::new("cm", sc.get())
+        Operation::new("cm", sc.get()),
+        Operation::new("rg", vec![0.into(),0.into(),0.into()])
     ];
 
     for opr in opr_vec {

@@ -7,7 +7,7 @@ use std::str::FromStr;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug, Clone)]
-#[clap(author, version, about, long_about = None)]
+#[clap(author, version = "0.1", about, long_about = None)]
 pub struct Cli {
     #[clap(subcommand)]
     pub task: Tasks,
@@ -15,8 +15,8 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug, Clone)]
 pub enum Tasks {
-    /// edit pdfs, pdf file must be patched first, using a non-patched pdf will result in
-    /// unexpected behavior
+    /// edit pdf file, pdf file must be patched first, using a non-patched pdf will result in
+    /// undefined behavior
     Edit {
         /// page size, required for correct font size rendering
         #[clap(short, default_value = "Word")]
@@ -46,7 +46,21 @@ pub enum Tasks {
         /// /out/file/path
         #[clap(name = "OUTPUT")]
         save_as: String,
+    },
+
+    /// list options for different commands
+    List {
+        #[clap(subcommand)]
+        list: ListOptions,
     }
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum ListOptions {
+    /// list supported page sizes
+    PageSize,
+    /// list supported options
+    Operations
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -75,14 +89,14 @@ impl Error for PageSizeNotUndersoodError {}
 
 impl fmt::Display for ParseOperationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid operation, run `leafedit list operations`\
+        write!(f, "invalid operation, run `leafedit list operations` \
                to get list of supported operations")
     }
 }
 
 impl fmt::Display for PageSizeNotUndersoodError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Page Size not supported, `leafedit list pagesizes`\
+        write!(f, "Page Size not supported, `leafedit list pagesizes` \
                to get list of supported sizes")
     }
 }

@@ -21,7 +21,6 @@ pub fn modify_main(input: &str, page: u32) -> Result<Document, LopdfError> {
     let mut patched_doc = create_doc(input_doc, map);
 
     apply_marks(&mut patched_doc, &mark);
-    patched_doc.save("saved.pdf")?;
 
     Ok(patched_doc)
 }

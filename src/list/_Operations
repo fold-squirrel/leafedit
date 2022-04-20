@@ -1,0 +1,7 @@
+
+Wr  =>  write text to a pdf file at set position and font size
+        Syntax 'Wr(x: <int>, y: <int>, f: <int>, t: <string>)'
+        f is the font size, t is the string to place in the pdf,
+        t can take utf-8 in the syntax \u{charCode} 
+        ex: \u{2713} for the correct symbol "✓"
+
