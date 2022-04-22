@@ -1,4 +1,5 @@
 use lopdf::{Dictionary, Object, Stream, dictionary};
+/// list supported options
 
 pub const CREATOR: &str = "Ahmed Mohammed (ahmed_alaa_gomaa@outlook.com)";
 pub const PRODUCER: &str = "leafedit (https://github.com/navyleaf/leafedit)";
@@ -8,7 +9,7 @@ pub enum Error {
 }
 
 
-pub fn f_9() -> Dictionary {
+pub fn f_10() -> Dictionary {
     dictionary!{
         "Type" => "Font",
         "Subtype" => "TrueType",
@@ -39,12 +40,12 @@ pub fn f_9() -> Dictionary {
     }
 }
 
-pub fn f_11() -> Stream {
+pub fn f_12() -> Stream {
     let to_unicode = include_bytes!("../../include/(13, 0).bin");
     Stream { dict: dictionary!{"Length" => to_unicode.len() as i64}, content: to_unicode.to_vec(), allows_compression: true, start_position: None }
 }
 
-pub fn f_12() -> Dictionary {
+pub fn f_13() -> Dictionary {
     dictionary!{
         "Type" => "FontDescriptor",
         "FontName" => "AHUBPT+LiberationSans",
@@ -61,13 +62,13 @@ pub fn f_12() -> Dictionary {
     }
 }
 
-pub fn f_13() -> Stream {
+pub fn f_14() -> Stream {
     let font_file = include_bytes!("../../include/(11, 0).bin");
     let len = font_file.len() as i64;
     Stream { dict: dictionary!{ "Length" => len,  "Length1" => len}, content: font_file.to_vec(), allows_compression: false, start_position: None}
 }
 
-pub fn f_10() -> Dictionary {
+pub fn f_11() -> Dictionary {
     dictionary!{
         "Type" => "Font",
         "Subtype" => "Type0",
@@ -78,12 +79,12 @@ pub fn f_10() -> Dictionary {
     }
 }
 
-pub fn f_14() -> Stream {
+pub fn f_15() -> Stream {
     let to_unicode = include_bytes!("../../include/(18, 0).bin");
     Stream { dict: dictionary!{ "Length" => to_unicode.len() as i64 }, content: to_unicode.to_vec(), allows_compression: false, start_position: None }
 }
 
-pub fn f_15() -> Dictionary {
+pub fn f_16() -> Dictionary {
     dictionary!{
         "Type" => "Font",
         "Subtype" => "CIDFontType2",
@@ -98,7 +99,7 @@ pub fn f_15() -> Dictionary {
     }
 }
 
-pub fn f_16() -> Dictionary{
+pub fn f_17() -> Dictionary{
     dictionary!{
         "Type" => "FontDescriptor",
         "FontName" => "FHWMZH+Symbola",
@@ -115,7 +116,7 @@ pub fn f_16() -> Dictionary{
     }
 }
 
-pub fn f_17() -> Stream {
+pub fn f_18() -> Stream {
     let font_file = include_bytes!("../../include/(16, 0).bin");
     let len = font_file.len() as i64;
     Stream { dict: dictionary!{ "Length" => len,  "Length1" => len}, content: font_file.to_vec(), allows_compression: false, start_position: None}

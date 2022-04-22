@@ -4,10 +4,10 @@ use std::fmt;
 use std::error::Error;
 use std::str::FromStr;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ArgGroup};
 
 #[derive(Parser, Debug, Clone)]
-#[clap(author, version = "0.1", about, long_about = None)]
+#[clap(author, version = "0.1.0-alpha", about, long_about = None)]
 pub struct Cli {
     #[clap(subcommand)]
     pub task: Tasks,
@@ -17,13 +17,18 @@ pub struct Cli {
 pub enum Tasks {
     /// edit pdf file, pdf file must be patched first, using a non-patched pdf will result in
     /// undefined behavior
+    #[clap(group(ArgGroup::new("oprs").required(true).args(&[ "operations", "opr-file"])))]
     Edit {
         /// page size, required for correct font size rendering
-        #[clap(short, default_value = "Word")]
+        #[clap(short, default_value = "A4")]
         page_size: PageSize,
         /// run `leafedit list operations` for a list of supported operations
-        #[clap(short, required = true)]
+        #[clap(short)]
         operations: Vec<Opr>,
+
+        /// use file of operations
+        #[clap(short = 'f')]
+        opr_file: Option<String>,
 
         /// /path/to/file
         #[clap(name = "INPUT")]
@@ -72,16 +77,33 @@ pub enum PageSize {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub enum Opr {
     #[serde(rename = "Wr")]
-    WriteLine {
-        #[serde(rename = "x")]
-        px: u32,
-        #[serde(rename = "y")]
-        py: u32,
-        #[serde(rename = "f")]
-        size: u32,
-        #[serde(rename = "t")]
-        text: String
-    }
+    WriteLine (u32, u32, u32, String),
+
+    #[serde(rename = "Cc")]
+    ChangeColor (Color),
+
+    #[serde(rename = "Crgb")]
+    ChangeRgb(u8, u8, u8),
+
+    #[serde(rename = "Lw")]
+    SetWidth (u32),
+
+    #[serde(rename = "Dl")]
+    DrawLine (u32, u32, u32, u32),
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub enum Color {
+    #[serde(rename = "red")]
+    Red,
+    #[serde(rename = "green")]
+    Green,
+    #[serde(rename = "blue")]
+    Blue,
+    #[serde(rename = "black")]
+    Black,
+    #[serde(rename = "white")]
+    White,
 }
 
 impl Error for ParseOperationError {}

@@ -11,18 +11,18 @@ pub enum ResourcesPlace {
 
 #[derive(Debug)]
 pub struct Marks {
-    pub from_root_extract_pages: bool,
     pub from_page_extract_resources: bool,
     pub from_resources_extract_fonts: bool,
+    pub from_resources_extract_extgstate: bool,
     pub resources_object_dereference: ResourcesPlace,
 }
 
 impl Marks {
     fn new() -> Marks {
         Marks {
-            from_root_extract_pages: false,
             from_page_extract_resources: false,
             from_resources_extract_fonts: false,
+            from_resources_extract_extgstate: false,
             resources_object_dereference: ResourcesPlace::CurrentPage,
         }
     }
@@ -42,17 +42,13 @@ pub fn modify_map(doc: &Document, obj_map: &mut Mapper, x: u32) -> Result<Marks,
     let root_obj_id = get_root_id(&doc.trailer);
     obj_map.remap(root_obj_id, 2);
 
-    // get pages object and depending on whether it's a dictionary or an id
-    // if it's an id then map it to (3, 0)
-    // if it's a dictionary then we mark it for extraction and free id (3, 0)
+    // get pages object id then map it to (3, 0)
     let pages_obj = get_pages_obj(doc.get_object(root_obj_id)?);
     let pages_id = match_on_id(pages_obj, "pages_obj").ok_or(LopdfError::ObjectIdMismatch)?;
     obj_map.remap(pages_id, 3);
 
 
-    // get page 1 object and depending on whether it's a dictionary or an id
-    // if it's an id then map it to (4, 0)
-    // if it's a dictionary then we mark it for extraction and free id (4, 0)
+    // get page 1 object it's an id then map it to (4, 0)
     let (page_obj, page_id) = match get_page_x_obj(doc, x) {
         Some(page_x) => page_x,
         None => return Err(LopdfError::PageNumberNotFound(x)),
@@ -97,9 +93,20 @@ pub fn modify_map(doc: &Document, obj_map: &mut Mapper, x: u32) -> Result<Marks,
                 }
                 None => obj_map.free_id_at(8)
             };
-            obj_map.free_ids_starting_from(8, 9);
+            match get_extgstate_obj(resources_obj) {
+                Some(extgstate_obj) => {
+                    match match_on_id(extgstate_obj, "extgstate_obj") {
+                        Some(id) => {obj_map.remap(id, 9);}
+                        None => {
+                            mark.from_resources_extract_extgstate = true; obj_map.free_id_at(9)
+                        }
+                    }
+                },
+                None => obj_map.free_id_at(9)
+            }
+            obj_map.free_ids_starting_from(9, 9);
         },
-        None => obj_map.free_ids_starting_from(6, 11)
+        None => obj_map.free_ids_starting_from(7, 11)
     };
 
     Ok(mark)
@@ -122,6 +129,17 @@ fn get_fonts_obj(resources_obj: &Object) -> Option<&Object> {
 
     match font_obj_result {
         Ok(font_obj) => Some(font_obj),
+        Err(_) => None,
+    }
+}
+
+fn get_extgstate_obj(resources_obj: &Object) -> Option<&Object> {
+    let extgstate_obj_result = get_obj(resources_obj,
+            b"ExtGState",
+            "resources_obj is not a dictionary");
+
+    match extgstate_obj_result {
+        Ok(extgstate_obj) => Some(extgstate_obj),
         Err(_) => None,
     }
 }

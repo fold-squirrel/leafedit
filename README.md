@@ -1,7 +1,7 @@
 
 # leafedit
 **leafedit** 
-is a general purpose command line pdf editor (well not just yet but will very soon) written entirely in safe rust, that can be used to automate repetative pdf manipulation tasks.
+is a general purpose command line pdf editor (well not just yet but will very soon) written entirely in rust, that can be used to automate repetative pdf manipulation tasks.
 
 ## Usage:
 ### Patch:
@@ -14,27 +14,25 @@ example:
 `leafedit patch myfile.pdf patched.pdf` will patch myfile.pdf and save it as patched.pdf
 
 ### Edit:
-operations can now be applied safely, usage:
-
+operations can now be applied, usage:\
 `leafedit edit -o 'operation' <INPUT> <OUTPUT>`
 
-mulitple operations can be applied at once:
-
+mulitple operations can be applied at once:\
 `leafedit edit -o 'operation' -o 'operation' -o 'operation' <INPUT> <OUTPUT>`
 
-currently only one operation is implemted,
+alternatively a path to a file conating a sigle operation on each line can be supplied as such:\
+`leafedit edit -f <PATH_TO_OPERATIONS_FILE> <INPUT> <OUTPUT>`
 
-operation: "Wr", which adds a string to a pdf, usage:
-
-`leafedit edit -o 'Wr (x:<int>, y:<int>, f:<int>, t:"<string>")' <INPUT> <OUTPUT>`
+operation example: "Wr", which adds a string to a pdf, usage:\
+`leafedit edit -o 'Wr (<int>, <int>, <int>, "<string>")' <INPUT> <OUTPUT>`
 ```
-"x" x-coordinate in the pdf content graph
+first argument x-coordinate in the pdf content graph
 
-"y" y-coordinate in the pdf content graph
+second argument y-coordinate in the pdf content graph
 
-"f" font size
+third argument font size
 
-"t" string to add to pdf
+fourth argument string to add to pdf
 ```
 #### example:
 
@@ -53,19 +51,20 @@ as editing a patched pdf is much faster that having to patch then edit every tim
 
 now we apply the edits
 ```
-leafedit edit -p A4 \
-	-o 'Wr (x:100, y:620, f:16, t:"Ahmed Alaa Gomaa")'  \
-	-o 'Wr (x:435, y:620, f:16, t:"20201701804")'  \
-	-o 'Wr (x:178, y:374, f:12, t:"17.8/20")'  \
-	-o 'Wr (x:513, y:374, f:14, t:"89")'  \
-	-o 'Wr (x:513, y:340, f:14, t:"70")'  \
-	-o 'Wr (x:132, y:406, f:18, t:"✓")'  \
-	-o 'Wr (x:411, y:266, f:18, t:"\u{2713}")'  \
-	temp.pdf final.pdf
+leafedit edit  \
+    -o 'Wr (100, 620, 16, "Ahmed Alaa Gomaa")'  \
+    -o 'Wr (435, 620, 16, "20201701804")'  \
+    -o 'Wr (178, 374, 12, "17.8/20")'  \
+    -o 'Wr (513, 374, 14, "89")'  \
+    -o 'Wr (513, 340, 14, "70")'  \
+    -o 'Wr (132, 406, 18, "✓")'  \
+    -o 'Wr (411, 266, 18, "\u{2713}")'  \
+    temp.pdf final.pdf
 ```
 
 and here is the output
 
 ![pdf after Wr](images/uel_patched_and_edited.png)
 
-more coming  soon.
+to get a list of all operations run: `leafedit list operations`\
+or read the file src/list/\_Operations

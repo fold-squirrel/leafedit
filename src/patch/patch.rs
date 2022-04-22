@@ -60,15 +60,15 @@ fn add_strean(final_doc: &mut Document) {
 }
 
 fn embed_font_files(doc: &mut Document) {
-    doc.objects.insert((9, 0), Object::Dictionary(f_9()));
     doc.objects.insert((10, 0), Object::Dictionary(f_10()));
-    doc.objects.insert((11, 0), Object::Stream(f_11()));
-    doc.objects.insert((12, 0), Object::Dictionary(f_12()));
-    doc.objects.insert((13, 0), Object::Stream(f_13()));
+    doc.objects.insert((11, 0), Object::Dictionary(f_11()));
+    doc.objects.insert((12, 0), Object::Stream(f_12()));
+    doc.objects.insert((13, 0), Object::Dictionary(f_13()));
     doc.objects.insert((14, 0), Object::Stream(f_14()));
-    doc.objects.insert((15, 0), Object::Dictionary(f_15()));
+    doc.objects.insert((15, 0), Object::Stream(f_15()));
     doc.objects.insert((16, 0), Object::Dictionary(f_16()));
-    doc.objects.insert((17, 0), Object::Stream(f_17()));
+    doc.objects.insert((17, 0), Object::Dictionary(f_17()));
+    doc.objects.insert((18, 0), Object::Stream(f_18()));
 }
 
 fn reverse_cm(content_matrix: Content) -> [Object; 6] {
@@ -105,8 +105,8 @@ fn change_font_names(dict: &mut Dictionary) -> Vec<String> {
     for k in keys.iter() {
         values.push(dict.remove(k.as_bytes()).unwrap());
     }
-    dict.set(b"F1".to_vec(), Object::Reference((9, 0)));
-    dict.set(b"F2".to_vec(), Object::Reference((10, 0)));
+    dict.set(b"F1".to_vec(), Object::Reference((10, 0)));
+    dict.set(b"F2".to_vec(), Object::Reference((11, 0)));
     for i in 0..values.len() {
         dict.set(format!("F{}", i + 3).as_bytes(), values.remove(0));
     }

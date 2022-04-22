@@ -57,16 +57,6 @@ fn purge_root(root_obj: &mut Object, preserve: Vec<Vec<u8>>) -> Result<(), Lopdf
 
 fn apply_marks(doc: &mut Document, marks: &Marks) {
 
-    if marks.from_root_extract_pages {
-        let root_obj_result = doc.get_object_mut((2, 0));
-        if let Ok(root_obj) = root_obj_result {
-            match modify_root_obj(root_obj) {
-                Some(pages_obj) => {doc.objects.insert((3, 0), pages_obj);},
-                None => {},
-            }
-        }
-    }
-
     let resources_id = match marks.resources_object_dereference {
         ResourcesPlace::RootPage => (3_u32, 0_u16),
         ResourcesPlace::CurrentPage => (4_u32, 0_u16),
@@ -99,8 +89,20 @@ fn apply_marks(doc: &mut Document, marks: &Marks) {
     if marks.from_resources_extract_fonts {
         let resources_result = doc.get_object_mut((7, 0));
         if let Ok(resources_obj) = resources_result {
-            match get_resourses(resources_obj) {
+            match get_fonts(resources_obj) {
                 Some(fonts) => {doc.objects.insert((8, 0), fonts);}
+                None => {}
+            }
+        }
+    }
+
+    doc.objects.entry((9, 0)).or_insert_with(|| Object::Dictionary(dictionary!{}));
+
+    if marks.from_resources_extract_extgstate {
+        let resources_result = doc.get_object_mut((7, 0));
+        if let Ok(resources_obj) = resources_result {
+            match get_extgstate(resources_obj) {
+                Some(extgstate) => {doc.objects.insert((9, 0), extgstate);}
                 None => {}
             }
         }
@@ -111,6 +113,10 @@ fn apply_marks(doc: &mut Document, marks: &Marks) {
             resources_object,
             (b"Font", Object::Reference((8, 0))),
             "couldn't modify Resources to add font ref");
+        modify_obj(
+            resources_object,
+            (b"ExtGState", Object::Reference((9, 0))),
+            "couldn't modify Resources to add ExtGState ref");
     }
 
     if let Ok(pages_obj) = doc.get_object_mut((3, 0)) {
@@ -249,16 +255,16 @@ fn collect_streams(doc: &mut Document, stream_id: &Vec<ObjectId>) -> Object {
     })
 }
 
-fn get_resourses(pages_obj: &mut Object) -> Option<Object> {
-    modify_obj(pages_obj,
+fn get_fonts(resources_obj: &mut Object) -> Option<Object> {
+    modify_obj(resources_obj,
                (b"Font", Object::Reference((8, 0))),
-               "couldn't not modify Pages object")
+               "couldn't not modify Resources object")
 }
 
-fn modify_root_obj(root_obj: &mut Object) -> Option<Object> {
-    modify_obj(root_obj,
-               (b"Pages", Object::Reference((3, 0))),
-               "couldn't not modify Root object")
+fn get_extgstate(resources_obj: &mut Object) -> Option<Object> {
+    modify_obj(resources_obj,
+               (b"ExtGState", Object::Reference((9, 0))),
+               "couldn't not modify Resources object")
 }
 
 fn modify_obj(obj: &mut Object, key_value: (&[u8], Object), error: &str) -> Option<Object> {

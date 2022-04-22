@@ -2,7 +2,7 @@ use lopdf::{Error as LopdfError, Document, Object};
 use lopdf::content::{Operation, Content};
 use crate::Opr;
 use crate::PageSize as Size;
-use super::editor::writer;
+use super::editor::*;
 
 pub fn edits(file: &str, save_as: &str, opr_vec: Vec<Opr>, size: Size) -> Result<(), LopdfError> {
     let mut doc = Document::load(file)?;
@@ -47,13 +47,32 @@ fn apply_opr(content_obj: &mut Object, opr_vec: Vec<Opr>, sc: Scale) -> Result<(
     let mut operations: Vec<Operation> = vec![
         Operation::new("q", vec![]),
         Operation::new("cm", sc.get()),
-        Operation::new("rg", vec![0.into(),0.into(),0.into()])
+        Operation::new("rg", vec![0.into(),0.into(),0.into()]),
+        Operation::new("w", vec![1.into()]),
+        Operation::new("J", vec![1.into()]),
+        Operation::new("j", vec![1.into()]),
     ];
 
     for opr in opr_vec {
         let mut next_operation = match opr {
-            Opr::WriteLine { px , py, size, text } => {
+            Opr::WriteLine(px , py, size, text ) => {
                 writer::write_text(px, py, size, text)
+            }
+
+            Opr::ChangeColor(color) => {
+                painter::change_color(color)
+            }
+
+            Opr::ChangeRgb(red, green, blue) => {
+                painter::change_rgb(red, green, blue)
+            }
+
+            Opr::SetWidth(width) => {
+                drawer::set_width(width)
+            }
+
+            Opr::DrawLine(x1, y1, x2, y2) => {
+                drawer::draw_line(x1, y1, x2, y2)
             }
         };
         operations.append(&mut next_operation);
@@ -68,6 +87,7 @@ fn apply_opr(content_obj: &mut Object, opr_vec: Vec<Opr>, sc: Scale) -> Result<(
 }
 
 fn clean_stream(operations: Vec<Operation>) -> Content {
+    // un-implemented yet
     Content { operations }
 }
 

@@ -1,7 +1,26 @@
 
-Wr  =>  write text to a pdf file at set position and font size
-        Syntax 'Wr(x: <int>, y: <int>, f: <int>, t: <string>)'
-        f is the font size, t is the string to place in the pdf,
-        t can take utf-8 in the syntax \u{charCode} 
+Wr   => write text to a pdf file at set position and font size
+        Syntax 'Wr(<int>, <int>, <int>, "<string>")'
+        first two argument are the x and y coordinates
+        third argument is the font size, fourth argument is the string to place in the pdf,
+        t can take utf-8 in the syntax \u{charCode}
         ex: \u{2713} for the correct symbol "✓"
 
+Cc   => chage color of the of the following operations
+        Syntax 'Cc(<color>)'
+        color: red, green, blue, white, black
+
+Crgb => chage color of the of the following operations
+        Syntax: 'Crgb(<int>, <int>, <int>)'
+        first  argument: red value 0 -> 255
+        second argument: green value 0 -> 255
+        third  argument: blue value 0 -> 255
+
+Lw   => set the line width for the following draw line operations
+        Syntax: 'Lw(<int>)'
+        first argument: the line width
+
+Dl   => draw line from one point to another
+        Syntax: 'Dl(<int>, <int>, <int>, <int>)'
+        first two argument are the x and y coordinates of the start point
+        second two argument are the x and y coordinates of the end point
