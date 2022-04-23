@@ -1,5 +1,5 @@
 use crate::commadline::{PageSize as Page, GridType as Grid, Opr, Color};
-use lopdf::Error as LopdfError;
+use lopdf::{Error as LopdfError, Object};
 
 const COLOURS: [(u8, u8, u8); 7] = [
     to_rgb(0x5F4149),
@@ -11,31 +11,58 @@ const COLOURS: [(u8, u8, u8); 7] = [
     to_rgb(0xa6896b),
 ];
 
-pub fn generate(size: Page, grid: Grid, file: &str, save_as: &str) -> Result<(), LopdfError> {
+pub fn generate(size: Page, gt: Grid, v: bool, file: &str, save: &str) -> Result<(), LopdfError> {
 
     let (width, height) = get_page_dimentions(&size);
-    let oprs = match grid {
+    let oprs = match gt {
         Grid::Full => full(width, height),
         Grid::Sub(x, y) => sub(width, height, x, y),
-        Grid::Mark(x, y) => mark(width, height, x, y),
+        Grid::Mark(x, y) => mark(v, x, y),
     };
 
-    crate::edit::apply::edits(file, save_as, oprs, size)?;
+    crate::edit::apply::edits(file, save, oprs, size)?;
     println!("gridded");
     Ok(())
 }
 
-fn mark(width: u32, height: u32, x: u32, y: u32) -> Vec<Opr> {
-    vec![
+fn mark(vertical: bool, x: u32, y: u32) -> Vec<Opr> {
+    let text = format!("({}, {})", x, y);
+    let mut oprs = vec![
         Opr::ChangeColor(Color::Grey),
         Opr::Raw("w".to_string(), vec![0.5.into()]),
-        Opr::DrawLine(0, y, width, y),
-        Opr::DrawLine(x, 0, x, height),
+        Opr::DrawLine(x + 4, y, x - 4, y),
+        Opr::DrawLine(x, y - 4, x, y + 4),
         Opr::ChangeColor(Color::Red),
-        Opr::SetWidth(2),
+        Opr::SetWidth(1),
         Opr::DrawLine(x, y, x, y),
-        Opr::WriteLine(x + 2, y + 4, 10, format!("({}, {})", x, y)),
-    ]
+    ];
+    if vertical {
+        let tm = vec![
+            Object::Integer(0),
+            Object::Integer(1),
+            Object::Integer(-1),
+            Object::Integer(0),
+            Object::Integer(x as i64 + 10),
+            Object::Integer(y as i64 + 2),
+        ];
+        let tf = vec![
+            Object::Name(b"F1".to_vec()),
+            Object::Integer(10),
+        ];
+        let tj = vec![
+            Object::string_literal(text),
+        ];
+        oprs.append(&mut vec![
+            Opr::Raw("BT".to_string(), vec![]),
+            Opr::Raw("Tf".to_string(), tf),
+            Opr::Raw("Tm".to_string(), tm),
+            Opr::Raw("Tj".to_string(), tj),
+            Opr::Raw("ET".to_string(), vec![]),
+        ])
+    } else {
+        oprs.push(Opr::WriteLine(x + 2, y + 4, 10, text));
+    }
+    oprs
 }
 
 fn sub(width: u32, height: u32, x: u32, y: u32) -> Vec<Opr> {
@@ -49,35 +76,36 @@ fn sub(width: u32, height: u32, x: u32, y: u32) -> Vec<Opr> {
     }
     oprs.push(Opr::SetWidth(1));
     for i in (x-1)..=(x+1) {
-        let (red, green, blue) = COLOURS[(i%7) as usize];
+        let (red, green, blue) = COLOURS[i as usize %COLOURS.len()];
         oprs.push(Opr::ChangeRgb(red, green, blue));
         oprs.push(Opr::DrawLine(i*20, 0, i*20, height));
         oprs.push(Opr::WriteLine(i*20 + 2, height - 20, 10, i.to_string()));
     };
     for i in (y-1)..=(y+1) {
-        let (red, green, blue) = COLOURS[(i%7) as usize];
+        let (red, green, blue) = COLOURS[(i as usize %COLOURS.len()) as usize];
         oprs.push(Opr::ChangeRgb(red, green, blue));
         oprs.push(Opr::DrawLine(0, i*20, width, i*20));
-        let text = if i < 10 {format!("  {}", i)} else {format!("{}", i)};
+        let text = if i < 10 {format!("0{}", i)} else {format!("{}", i)};
         oprs.push(Opr::WriteLine(5, i*20 + 2, 10, text));
     };
     oprs
 }
 
 fn full(width: u32, height: u32) -> Vec<Opr> {
-    let mut oprs = vec![Opr::SetWidth(2)];
+    let mut oprs = vec![Opr::SetWidth(1)];
 
     for i in 1..=width/20 {
-        let (red, green, blue) = COLOURS[(i%7) as usize];
+        let (red, green, blue) = COLOURS[(i as usize %COLOURS.len()) as usize];
         oprs.push(Opr::ChangeRgb(red, green, blue));
         oprs.push(Opr::DrawLine(i*20, 0, i*20, height));
-        oprs.push(Opr::WriteLine(i*20 + 2, height - 20, 10, i.to_string()));
+        let text = if i < 10 {format!("0{}", i)} else {format!("{}", i)};
+        oprs.push(Opr::WriteLine(i*20 + 2, 5, 10, text));
     }
     for i in 1..height/20 {
-        let (red, green, blue) = COLOURS[(i%7) as usize];
+        let (red, green, blue) = COLOURS[(i as usize %COLOURS.len()) as usize];
         oprs.push(Opr::ChangeRgb(red, green, blue));
         oprs.push(Opr::DrawLine(0, i*20, width, i*20));
-        let text = if i < 10 {format!("  {}", i)} else {format!("{}", i)};
+        let text = if i < 10 {format!("0{}", i)} else {format!("{}", i)};
         oprs.push(Opr::WriteLine(5, i*20 + 2, 10, text));
     }
 

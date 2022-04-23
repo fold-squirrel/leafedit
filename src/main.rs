@@ -24,8 +24,10 @@ fn start(args: commadline::Cli) -> Result<(), u32> {
             patch::patch::patch(&file, &save_as, page).ok();
         },
 
-        Tasks::Edit { operations, opr_file, file, save_as, page_size} => {
-            if let Some(path) = opr_file {
+        Tasks::Edit { operations, opr_file, undo, file, save_as, page_size} => {
+            if undo {
+                edit::undo::undo_last(file, save_as).ok();
+            } else if let Some(path) = opr_file {
                 let oprs = parse_opr_file(&path);
                 edit::apply::edits(&file, &save_as, oprs, page_size).ok();
             } else {
@@ -33,8 +35,8 @@ fn start(args: commadline::Cli) -> Result<(), u32> {
             }
         }
 
-        Tasks::Grid { page_size, gridtype, file, save_as } => {
-            grid::grids::generate(page_size, gridtype, &file, &save_as).ok();
+        Tasks::Grid { page_size, gridtype, rotate, file, save_as } => {
+            grid::grids::generate(page_size, gridtype, rotate, &file, &save_as).ok();
         }
 
         Tasks::List { list } => {

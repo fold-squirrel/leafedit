@@ -8,7 +8,7 @@ use std::str::FromStr;
 use clap::{Parser, Subcommand, ArgGroup};
 
 #[derive(Parser, Debug, Clone)]
-#[clap(author, version = "0.1.0-alpha", about, long_about = None)]
+#[clap(author, version = "0.2.0-alpha", about, long_about = None)]
 pub struct Cli {
     #[clap(subcommand)]
     pub task: Tasks,
@@ -18,7 +18,7 @@ pub struct Cli {
 pub enum Tasks {
     /// edit pdf file, pdf file must be patched first, using a non-patched pdf will result in
     /// undefined behavior
-    #[clap(group(ArgGroup::new("oprs").required(true).args(&[ "operations", "opr-file"])))]
+    #[clap(group(ArgGroup::new("oprs").required(true).args(&[ "operations", "opr-file","undo"])))]
     Edit {
         /// page size, required for correct font size rendering
         #[clap(short, default_value = "A4")]
@@ -26,6 +26,8 @@ pub enum Tasks {
         /// run `leafedit list operations` for a list of supported operations
         #[clap(short)]
         operations: Vec<Opr>,
+        #[clap(long)]
+        undo: bool,
 
         /// use file of operations
         #[clap(short = 'f')]
@@ -36,7 +38,7 @@ pub enum Tasks {
         file: String,
 
         /// /out/file/path
-        #[clap(name = "OUTPUT")]
+        #[clap(name = "OUTPUT", default_value = "out.pdf")]
         save_as: String,
     },
 
@@ -49,12 +51,16 @@ pub enum Tasks {
         #[clap(short = 't')]
         gridtype: GridType,
 
+        /// text trasformation
+        #[clap(short = 'r')]
+        rotate: bool,
+
         /// /path/to/file
         #[clap(name = "INPUT")]
         file: String,
 
         /// /out/file/path
-        #[clap(name = "OUTPUT")]
+        #[clap(name = "OUTPUT", default_value = "out.pdf")]
         save_as: String,
     },
 
