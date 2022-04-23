@@ -11,7 +11,6 @@ pub fn edits(file: &str, save_as: &str, opr_vec: Vec<Opr>, size: Size) -> Result
 
     apply_opr(doc.get_object_mut((6, 0))?, opr_vec, scale)?;
 
-    println!("saving");
     doc.save(save_as)?;
     Ok(())
 }
@@ -44,7 +43,7 @@ impl Scale {
 fn apply_opr(content_obj: &mut Object, opr_vec: Vec<Opr>, sc: Scale) -> Result<(), LopdfError> {
     let content = content_obj.as_stream_mut()?;
 
-    let mut operations: Vec<Operation> = vec![
+    let mut operations: Vec<Operation> = vec![ 
         Operation::new("q", vec![]),
         Operation::new("cm", sc.get()),
         Operation::new("rg", vec![0.into(),0.into(),0.into()]),
@@ -74,6 +73,10 @@ fn apply_opr(content_obj: &mut Object, opr_vec: Vec<Opr>, sc: Scale) -> Result<(
             Opr::DrawLine(x1, y1, x2, y2) => {
                 drawer::draw_line(x1, y1, x2, y2)
             }
+
+            Opr::Raw(raw_operator, raw_operants) => {
+                vec![Operation::new(&raw_operator, raw_operants)]
+            }
         };
         operations.append(&mut next_operation);
     }
@@ -81,7 +84,9 @@ fn apply_opr(content_obj: &mut Object, opr_vec: Vec<Opr>, sc: Scale) -> Result<(
     operations.push(Operation::new("Q", vec![]));
 
     let contents = clean_stream(operations);
-    content.set_plain_content(contents.encode()?);
+    let mut stream = content.content.to_owned();
+    stream.append(&mut contents.encode()?);
+    content.set_plain_content(stream.to_vec());
 
     Ok(())
 }

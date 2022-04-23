@@ -1,3 +1,4 @@
+use lopdf::Object;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -39,6 +40,24 @@ pub enum Tasks {
         save_as: String,
     },
 
+    Grid {
+        /// page size, required for correct font size rendering
+        #[clap(short, default_value = "A4")]
+        page_size: PageSize,
+
+        /// grid type
+        #[clap(short = 't')]
+        gridtype: GridType,
+
+        /// /path/to/file
+        #[clap(name = "INPUT")]
+        file: String,
+
+        /// /out/file/path
+        #[clap(name = "OUTPUT")]
+        save_as: String,
+    },
+
     /// apply a set of operations that are necessary before any edits,
     /// like embeding fonts and reseting content tranformation matrix
     Patch {
@@ -60,12 +79,24 @@ pub enum Tasks {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub enum GridType {
+    #[serde(rename = "full")]
+    Full,
+    #[serde(rename = "sub")]
+    Sub(u32, u32),
+    #[serde(rename = "mark")]
+    Mark(u32, u32),
+}
+
 #[derive(Subcommand, Debug, Clone)]
 pub enum ListOptions {
     /// list supported page sizes
     PageSize,
     /// list supported options
-    Operations
+    Operations,
+    /// list supported grid types
+    GridType,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -90,6 +121,9 @@ pub enum Opr {
 
     #[serde(rename = "Dl")]
     DrawLine (u32, u32, u32, u32),
+
+    #[serde(skip)]
+    Raw(String, Vec<Object>),
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -104,14 +138,17 @@ pub enum Color {
     Black,
     #[serde(rename = "white")]
     White,
+    #[serde(rename = "grey")]
+    Grey,
 }
 
 impl Error for ParseOperationError {}
 impl Error for PageSizeNotUndersoodError {}
+impl Error for GridTypeNotUndersoodError {}
 
 impl fmt::Display for ParseOperationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid operation, run `leafedit list operations` \
+        write!(f, "Invalid operation, run `leafedit list operations` \
                to get list of supported operations")
     }
 }
@@ -120,6 +157,13 @@ impl fmt::Display for PageSizeNotUndersoodError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Page Size not supported, `leafedit list pagesizes` \
                to get list of supported sizes")
+    }
+}
+
+impl fmt::Display for GridTypeNotUndersoodError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Invalid grid type, `leafedit list grid-types` \
+               to get list of supported grid types")
     }
 }
 
@@ -152,3 +196,17 @@ impl FromStr for PageSize {
 
 }
 
+#[derive(Debug)]
+pub struct GridTypeNotUndersoodError;
+
+impl FromStr for GridType {
+    type Err = GridTypeNotUndersoodError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match ron::from_str(s) {
+            Ok(grid) => Ok(grid),
+            Err(_) => Err(GridTypeNotUndersoodError),
+        }
+    }
+
+}

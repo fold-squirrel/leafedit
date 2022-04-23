@@ -9,6 +9,7 @@ use commadline::{Opr, Cli, Tasks, PageSize};
 mod patch;
 mod edit;
 mod list;
+mod grid;
 
 
 fn main() {
@@ -23,13 +24,17 @@ fn start(args: commadline::Cli) -> Result<(), u32> {
             patch::patch::patch(&file, &save_as, page).ok();
         },
 
-        Tasks::Edit { operations, opr_file, file, save_as, page_size } => {
+        Tasks::Edit { operations, opr_file, file, save_as, page_size} => {
             if let Some(path) = opr_file {
                 let oprs = parse_opr_file(&path);
                 edit::apply::edits(&file, &save_as, oprs, page_size).ok();
             } else {
                 edit::apply::edits(&file, &save_as, operations, page_size).ok();
             }
+        }
+
+        Tasks::Grid { page_size, gridtype, file, save_as } => {
+            grid::grids::generate(page_size, gridtype, &file, &save_as).ok();
         }
 
         Tasks::List { list } => {
