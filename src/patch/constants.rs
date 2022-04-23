@@ -16,7 +16,7 @@ pub fn f_10() -> Dictionary {
         "BaseFont" => "AHUBPT+LiberationSans",
         "FirstChar" => 32,
         "LastChar" => 122,
-        "FontDescriptor" => (12, 0),
+        "FontDescriptor" => (13, 0),
         "Encoding" => "WinAnsiEncoding",
         "Widths" => vec![
             277.into(), 277.into(), 354.into(), 556.into(), 556.into(),
@@ -36,7 +36,7 @@ pub fn f_10() -> Dictionary {
             500.into(), 277.into(), 556.into(), 500.into(), 722.into(), 500.into(),
             500.into(), 500.into(), 333.into(), 259.into(), 333.into(), 583.into(),
         ],
-        "ToUnicode" => (11, 0),
+        "ToUnicode" => (12, 0),
     }
 }
 
@@ -58,7 +58,7 @@ pub fn f_13() -> Dictionary {
         "CapHeight" => 979,
         "StemV" => 80,
         "StemH" => 80,
-        "FontFile2" => (13, 0),
+        "FontFile2" => (14, 0),
     }
 }
 
@@ -75,7 +75,7 @@ pub fn f_11() -> Dictionary {
         "BaseFont" => "FHWMZH+Symbola",
         "Encoding" => "Identity-H",
         "DescendantFonts" => vec![Object::Reference((15, 0))],
-        "ToUnicode" => (14, 0),
+        "ToUnicode" => (15, 0),
     }
 }
 
@@ -94,7 +94,7 @@ pub fn f_16() -> Dictionary {
             "Ordering" => Object::string_literal("Identity"),
             "Supplement" => Object::Integer(0),
         },
-        "FontDescriptor" => (16, 0),
+        "FontDescriptor" => (17, 0),
         "W" => vec![ 0.into(), Object::Array(vec![ 626.into(), 784.into() ]) ],
     }
 }
@@ -112,7 +112,7 @@ pub fn f_17() -> Dictionary{
         "CapHeight" => 925,
         "StemV" => 80,
         "StemH" => 80,
-        "FontFile2" => (17, 0),
+        "FontFile2" => (18, 0),
     }
 }
 
