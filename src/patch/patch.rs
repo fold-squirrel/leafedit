@@ -45,7 +45,11 @@ pub fn patch(file: &str, save_as: &str, page: u32) -> Result<(), LopdfError> {
 
     embed_font_files(&mut final_doc);
 
+    final_doc.version = "1.7".to_string();
+
     final_doc.save(save_as)?;
+
+    println!("patched");
 
     Ok(())
 }

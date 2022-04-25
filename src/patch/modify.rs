@@ -8,8 +8,8 @@ use crate::patch::map::Mapper;
 
 use crate::patch::analyze::{modify_map, Marks};
 
-use crate::patch::constants::CREATOR;
-use crate::patch::constants::PRODUCER;
+use crate::CREATOR;
+use crate::PRODUCER;
 
 pub fn modify_main(input: &str, page: u32) -> Result<Document, LopdfError> {
 
@@ -283,9 +283,9 @@ fn modify_obj(obj: &mut Object, key_value: (&[u8], Object), error: &str) -> Opti
     previous_obj
 }
 
-fn create_info_obj(creater: &str, producer: &str) -> Object {
+fn create_info_obj(creator: &str, producer: &str) -> Object {
     Object::Dictionary(dictionary! {
-        "Creator" => Object::String(creater.as_bytes().to_vec(), StringFormat::Literal),
+        "Creator" => Object::String(creator.as_bytes().to_vec(), StringFormat::Literal),
         "Producer" => Object::string_literal(producer),
         "CreationDate" => Local::now()
     })

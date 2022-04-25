@@ -8,7 +8,7 @@ use std::str::FromStr;
 use clap::{Parser, Subcommand, ArgGroup};
 
 #[derive(Parser, Debug, Clone)]
-#[clap(author, version = "0.2.0-alpha", about, long_about = None)]
+#[clap(author, version = "0.0.3-alpha", about, long_about = None)]
 pub struct Cli {
     #[clap(subcommand)]
     pub task: Tasks,
@@ -75,6 +75,16 @@ pub enum Tasks {
         file: String,
         /// /out/file/path
         #[clap(name = "OUTPUT")]
+        save_as: String,
+    },
+
+    Merge {
+        /// /path/to/files
+        #[clap(name = "INPUTS", required = true, multiple_occurrences = true)]
+        files: Vec<String>,
+
+        /// /out/file/path
+        #[clap(name = "OUTPUT", required = true)]
         save_as: String,
     },
 

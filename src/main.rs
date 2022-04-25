@@ -10,7 +10,10 @@ mod patch;
 mod edit;
 mod list;
 mod grid;
+mod merge;
 
+pub const CREATOR: &str = "Ahmed Mohammed (ahmed_alaa_gomaa@outlook.com)";
+pub const PRODUCER: &str = "leafedit (https://github.com/navyleaf/leafedit)";
 
 fn main() {
     let cli = Cli::parse();
@@ -33,6 +36,10 @@ fn start(args: commadline::Cli) -> Result<(), u32> {
             } else {
                 edit::apply::edits(&file, &save_as, operations, page_size).ok();
             }
+        }
+
+        Tasks::Merge { files, save_as } => {
+            merge::merger::merge_patched_docs(files, save_as).ok();
         }
 
         Tasks::Grid { page_size, gridtype, rotate, file, save_as } => {

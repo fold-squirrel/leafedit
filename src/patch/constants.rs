@@ -1,9 +1,6 @@
 use lopdf::{Dictionary, Object, Stream, dictionary};
 /// list supported options
 
-pub const CREATOR: &str = "Ahmed Mohammed (ahmed_alaa_gomaa@outlook.com)";
-pub const PRODUCER: &str = "leafedit (https://github.com/navyleaf/leafedit)";
-
 pub enum Error {
     KeyNotPresent,
 }
@@ -74,7 +71,7 @@ pub fn f_11() -> Dictionary {
         "Subtype" => "Type0",
         "BaseFont" => "FHWMZH+Symbola",
         "Encoding" => "Identity-H",
-        "DescendantFonts" => vec![Object::Reference((15, 0))],
+        "DescendantFonts" => vec![Object::Reference((16, 0))],
         "ToUnicode" => (15, 0),
     }
 }

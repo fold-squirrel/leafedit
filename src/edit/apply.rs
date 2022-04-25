@@ -12,6 +12,8 @@ pub fn edits(file: &str, save_as: &str, opr_vec: Vec<Opr>, size: Size) -> Result
     apply_opr(doc.get_object_mut((6, 0))?, opr_vec, scale)?;
 
     doc.save(save_as)?;
+    println!("edited");
+
     Ok(())
 }
 
