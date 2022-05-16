@@ -1,7 +1,7 @@
 
 # leafedit
 **leafedit** 
-is a general purpose command line pdf editor (well not just yet but will very soon) written entirely in rust, that can be used to automate repetative pdf manipulation tasks.
+is a command line pdf editor (well not just yet but will very soon) written entirely in rust, that can be used to automate repetative pdf manipulation tasks.
 
 ## Usage:
 ### Patch:
@@ -14,13 +14,14 @@ example:
 `leafedit patch myfile.pdf patched.pdf` will patch myfile.pdf and save it as patched.pdf
 
 ### Edit:
-operations can now be applied, usage:\
+operations can now be applied, \
+usage:\
 `leafedit edit -o 'operation' <INPUT> <OUTPUT>`
 
 mulitple operations can be applied at once:\
 `leafedit edit -o 'operation' -o 'operation' -o 'operation' <INPUT> <OUTPUT>`
 
-alternatively a path to a file conating a sigle operation on each line can be supplied as such:\
+alternatively a path to a file conating a single operation on each line can be supplied as such:\
 `leafedit edit -f <PATH_TO_OPERATIONS_FILE> <INPUT> <OUTPUT>`
 
 operation example: "Wr", which adds a string to a pdf, usage:\
