@@ -1,5 +1,7 @@
-use crate::commadline::{PageSize as Page, GridType as Grid, Opr, Color};
-use lopdf::{Error as LopdfError, Object};
+use crate::commadline::{GridType as Grid, Opr, Color};
+use lopdf::{Error as LopdfError, Object, Document};
+
+use crate::info::display;
 
 const COLOURS: [(u8, u8, u8); 7] = [
     to_rgb(0x5F4149),
@@ -11,21 +13,29 @@ const COLOURS: [(u8, u8, u8); 7] = [
     to_rgb(0xa6896b),
 ];
 
-pub fn generate(size: Page, gt: Grid, v: bool, file: &str, save: &str) -> Result<(), LopdfError> {
+pub fn generate(grid: Grid) -> Result<(), LopdfError> {
 
-    let (width, height) = get_page_dimentions(&size);
-    let oprs = match gt {
-        Grid::Full => full(width, height),
-        Grid::Sub(x, y) => sub(width, height, x, y),
-        Grid::Mark(x, y) => mark(v, x, y),
+    let (file, save) = match grid {
+        Grid::Full { ref file, ref save_as } => (file, save_as),
+        Grid::Sub { ref file, ref save_as, .. } => (file, save_as),
+        Grid::Mark { ref file, ref save_as, .. } => (file, save_as)
     };
 
-    crate::edit::apply::edits(file, save, oprs, size)?;
+    let mut doc = Document::load(file)?;
+    let (width, height) = display::from_doc_get_page_width_height(&doc, (4, 0));
+    let oprs = match grid {
+        Grid::Full { .. } => full(width as u32, height as u32),
+        Grid::Sub { x, y, .. } => sub(width as u32, height as u32, x, y),
+        Grid::Mark { x, y, rotate, .. } => mark(rotate, x, y),
+    };
+
+    crate::edit::apply::edits_on_doc(&mut doc, oprs)?;
+    doc.save(save)?;
     println!("gridded");
     Ok(())
 }
 
-fn mark(vertical: bool, x: u32, y: u32) -> Vec<Opr> {
+fn mark(rotate_text: bool, x: u32, y: u32) -> Vec<Opr> {
     let text = format!("({}, {})", x, y);
     let mut oprs = vec![
         Opr::ChangeColor(Color::Grey),
@@ -36,7 +46,7 @@ fn mark(vertical: bool, x: u32, y: u32) -> Vec<Opr> {
         Opr::SetWidth(1),
         Opr::DrawLine(x, y, x, y),
     ];
-    if vertical {
+    if rotate_text {
         let tm = vec![
             Object::Integer(0),
             Object::Integer(1),
@@ -67,6 +77,7 @@ fn mark(vertical: bool, x: u32, y: u32) -> Vec<Opr> {
 
 fn sub(width: u32, height: u32, x: u32, y: u32) -> Vec<Opr> {
     let mut oprs = vec![Opr::Raw("w".to_string(), vec![0.3.into()])];
+
     oprs.push(Opr::ChangeColor(Color::Grey));
     for i in 1..10 {
         oprs.push(Opr::DrawLine((x-1)*20+i*4, (y-1)*20, (x-1)*20+i*4, (y+1)*20));
@@ -75,50 +86,39 @@ fn sub(width: u32, height: u32, x: u32, y: u32) -> Vec<Opr> {
         oprs.push(Opr::DrawLine((x-1)*20, (y-1)*20+i*4, (x+1)*20, (y-1)*20+i*4));
     }
     oprs.push(Opr::SetWidth(1));
-    for i in (x-1)..=(x+1) {
-        let (red, green, blue) = COLOURS[i as usize %COLOURS.len()];
-        oprs.push(Opr::ChangeRgb(red, green, blue));
-        oprs.push(Opr::DrawLine(i*20, 0, i*20, height));
-        oprs.push(Opr::WriteLine(i*20 + 2, height - 20, 10, i.to_string()));
-    };
-    for i in (y-1)..=(y+1) {
+
+    oprs.append(&mut grid_from_to(x - 1, x + 1, height, true));
+    oprs.append(&mut grid_from_to(y - 1, y + 1, width, false));
+
+    oprs
+}
+
+fn grid_from_to(from: u32, to: u32, length: u32, vertical: bool) -> Vec<Opr> {
+    let mut oprs = vec![];
+    for i in from..=to {
         let (red, green, blue) = COLOURS[(i as usize %COLOURS.len()) as usize];
         oprs.push(Opr::ChangeRgb(red, green, blue));
-        oprs.push(Opr::DrawLine(0, i*20, width, i*20));
         let text = if i < 10 {format!("0{}", i)} else {format!("{}", i)};
-        oprs.push(Opr::WriteLine(5, i*20 + 2, 10, text));
-    };
+        if vertical {
+            oprs.push(Opr::DrawLine(i*20, 0, i*20, length + 1));
+            oprs.push(Opr::WriteLine(i*20 + 2, 5, 10, text));
+        } else {
+            oprs.push(Opr::DrawLine(0, i*20, length + 1, i*20));
+            oprs.push(Opr::WriteLine(5, i*20 + 2, 10, text));
+        }
+    }
     oprs
 }
 
 fn full(width: u32, height: u32) -> Vec<Opr> {
     let mut oprs = vec![Opr::SetWidth(1)];
 
-    for i in 1..=width/20 {
-        let (red, green, blue) = COLOURS[(i as usize %COLOURS.len()) as usize];
-        oprs.push(Opr::ChangeRgb(red, green, blue));
-        oprs.push(Opr::DrawLine(i*20, 0, i*20, height));
-        let text = if i < 10 {format!("0{}", i)} else {format!("{}", i)};
-        oprs.push(Opr::WriteLine(i*20 + 2, 5, 10, text));
-    }
-    for i in 1..height/20 {
-        let (red, green, blue) = COLOURS[(i as usize %COLOURS.len()) as usize];
-        oprs.push(Opr::ChangeRgb(red, green, blue));
-        oprs.push(Opr::DrawLine(0, i*20, width, i*20));
-        let text = if i < 10 {format!("0{}", i)} else {format!("{}", i)};
-        oprs.push(Opr::WriteLine(5, i*20 + 2, 10, text));
-    }
+    oprs.append(&mut grid_from_to(1, width/20, height, true));
+    oprs.append(&mut grid_from_to(1, height/20, width, false));
 
     oprs
 }
 
 const fn to_rgb(hex: u32) -> (u8, u8, u8) {
     ((hex >> 16) as u8, ((hex >> 8) & 255) as u8, (hex & 255) as u8)
-}
-
-fn get_page_dimentions(page: &Page) -> (u32, u32) {
-    match page {
-        Page::A4 => (595, 842),
-        Page::Word => (612, 792),
-    }
 }

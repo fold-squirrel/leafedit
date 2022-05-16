@@ -8,7 +8,12 @@ edition = "2021"
 [dependencies]
 lopdf = "0.27.0"
 clap = { version = "3.1.8", features = ["derive"] }
-ron = "0.7"
 serde = { version = "1.0.136", features = ["derive"] }
-serde-name = "0.2.0"
+ron = "0.7"
 chrono = "0.4.19"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+

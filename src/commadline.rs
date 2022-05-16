@@ -20,15 +20,12 @@ pub enum Tasks {
     /// undefined behavior
     #[clap(group(ArgGroup::new("oprs").required(true).args(&[ "operations", "opr-file","undo"])))]
     Edit {
-        /// page size, required for correct font size rendering
-        #[clap(short, default_value = "A4")]
-        page_size: PageSize,
         /// run `leafedit list operations` for a list of supported operations
         #[clap(short)]
         operations: Vec<Opr>,
+        /// undo last edit command
         #[clap(long)]
         undo: bool,
-
         /// use file of operations
         #[clap(short = 'f')]
         opr_file: Option<String>,
@@ -43,25 +40,9 @@ pub enum Tasks {
     },
 
     Grid {
-        /// page size, required for correct font size rendering
-        #[clap(short, default_value = "A4")]
-        page_size: PageSize,
-
         /// grid type
-        #[clap(short = 't')]
+        #[clap(subcommand)]
         gridtype: GridType,
-
-        /// text trasformation
-        #[clap(short = 'r')]
-        rotate: bool,
-
-        /// /path/to/file
-        #[clap(name = "INPUT")]
-        file: String,
-
-        /// /out/file/path
-        #[clap(name = "OUTPUT", default_value = "out.pdf")]
-        save_as: String,
     },
 
     /// apply a set of operations that are necessary before any edits,
@@ -92,33 +73,88 @@ pub enum Tasks {
     List {
         #[clap(subcommand)]
         list: ListOptions,
+    },
+
+    /// show information about pdf
+    Info {
+        /// what information to show
+        #[clap(subcommand)]
+        about: Information,
+
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Subcommand, Debug, Clone)]
+pub enum Information {
+    PageSize{
+        /// page to show size of
+        #[clap(short, default_value = "1")]
+        page: u32,
+
+        /// /path/to/file
+        #[clap(name = "INPUT")]
+        file: String,
+    },
+}
+
+#[derive(Subcommand, Debug, Clone)]
 pub enum GridType {
-    #[serde(rename = "full")]
-    Full,
-    #[serde(rename = "sub")]
-    Sub(u32, u32),
-    #[serde(rename = "mark")]
-    Mark(u32, u32),
+    /// grid the entire page with an interval 20 points
+    Full {
+        /// /path/to/file
+        #[clap(name = "INPUT")]
+        file: String,
+
+        /// /out/file/path
+        #[clap(name = "OUTPUT", default_value = "out.pdf")]
+        save_as: String,
+    },
+
+    /// grid with interval 4 around intersection point from full grid
+    Sub {
+        /// number of the horizantal line
+        x: u32,
+
+        /// number of the vertial line
+        y: u32,
+
+        /// /path/to/file
+        #[clap(name = "INPUT")]
+        file: String,
+
+        /// /out/file/path
+        #[clap(name = "OUTPUT", default_value = "out.pdf")]
+        save_as: String,
+    },
+
+    /// mark a point from the at postion x, y in the pdf graph
+    Mark {
+        /// x-coordinate in pdf content graph
+        x: u32,
+
+        /// y-coordinate in pdf content graph
+        y: u32,
+
+        /// make printed text vertical
+        #[clap(short = 'r')]
+        rotate: bool,
+
+        /// /path/to/file
+        #[clap(name = "INPUT")]
+        file: String,
+
+        /// /out/file/path
+        #[clap(name = "OUTPUT", default_value = "out.pdf")]
+        save_as: String,
+    },
 }
 
 #[derive(Subcommand, Debug, Clone)]
 pub enum ListOptions {
-    /// list supported page sizes
-    PageSize,
     /// list supported options
     Operations,
     /// list supported grid types
     GridType,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub enum PageSize {
-    Word,
-    A4,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -159,27 +195,11 @@ pub enum Color {
 }
 
 impl Error for ParseOperationError {}
-impl Error for PageSizeNotUndersoodError {}
-impl Error for GridTypeNotUndersoodError {}
 
 impl fmt::Display for ParseOperationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Invalid operation, run `leafedit list operations` \
                to get list of supported operations")
-    }
-}
-
-impl fmt::Display for PageSizeNotUndersoodError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Page Size not supported, `leafedit list pagesizes` \
-               to get list of supported sizes")
-    }
-}
-
-impl fmt::Display for GridTypeNotUndersoodError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Invalid grid type, `leafedit list grid-types` \
-               to get list of supported grid types")
     }
 }
 
@@ -193,35 +213,6 @@ impl FromStr for Opr {
         match ron::from_str(s) {
             Ok(opr) => Ok(opr),
             Err(_) => Err(ParseOperationError),
-        }
-    }
-
-}
-
-#[derive(Debug)]
-pub struct PageSizeNotUndersoodError;
-impl FromStr for PageSize {
-    type Err = PageSizeNotUndersoodError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match ron::from_str(s) {
-            Ok(opr) => Ok(opr),
-            Err(_) => Err(PageSizeNotUndersoodError),
-        }
-    }
-
-}
-
-#[derive(Debug)]
-pub struct GridTypeNotUndersoodError;
-
-impl FromStr for GridType {
-    type Err = GridTypeNotUndersoodError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match ron::from_str(s) {
-            Ok(grid) => Ok(grid),
-            Err(_) => Err(GridTypeNotUndersoodError),
         }
     }
 

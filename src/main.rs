@@ -4,13 +4,14 @@ use std::io::{self, BufRead};
 use std::str::FromStr;
 
 mod commadline;
-use commadline::{Opr, Cli, Tasks, PageSize};
+use commadline::{Opr, Cli, Tasks};
 
 mod patch;
 mod edit;
 mod list;
 mod grid;
 mod merge;
+mod info;
 
 pub const CREATOR: &str = "Ahmed Mohammed (ahmed_alaa_gomaa@outlook.com)";
 pub const PRODUCER: &str = "leafedit (https://github.com/navyleaf/leafedit)";
@@ -27,14 +28,14 @@ fn start(args: commadline::Cli) -> Result<(), u32> {
             patch::patch::patch(&file, &save_as, page).ok();
         },
 
-        Tasks::Edit { operations, opr_file, undo, file, save_as, page_size} => {
+        Tasks::Edit { operations, opr_file, undo, file, save_as} => {
             if undo {
                 edit::undo::undo_last(file, save_as).ok();
             } else if let Some(path) = opr_file {
                 let oprs = parse_opr_file(&path);
-                edit::apply::edits(&file, &save_as, oprs, page_size).ok();
+                edit::apply::edits(&file, &save_as, oprs).ok();
             } else {
-                edit::apply::edits(&file, &save_as, operations, page_size).ok();
+                edit::apply::edits(&file, &save_as, operations).ok();
             }
         }
 
@@ -42,12 +43,16 @@ fn start(args: commadline::Cli) -> Result<(), u32> {
             merge::merger::merge_patched_docs(files, save_as).ok();
         }
 
-        Tasks::Grid { page_size, gridtype, rotate, file, save_as } => {
-            grid::grids::generate(page_size, gridtype, rotate, &file, &save_as).ok();
+        Tasks::Grid { gridtype} => {
+            grid::grids::generate(gridtype).ok();
         }
 
         Tasks::List { list } => {
             list::help::of(list);
+        }
+
+        Tasks::Info { about } => {
+            info::display::from_file(about).ok();
         }
     }
 
