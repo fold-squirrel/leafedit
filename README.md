@@ -1,7 +1,7 @@
 
 # leafedit
 **leafedit** 
-is a command line pdf editor (well not just yet but will very soon) written entirely in rust, that can be used to automate repetative pdf manipulation tasks.
+is a command line pdf editor written entirely in rust, that can be used to automate repetative pdf manipulation tasks.
 
 ## Usage:
 ### Patch:
